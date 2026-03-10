@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-e0c272c1ab2bc25260645b6520621531eaefcd8c",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/property.sol": "project/contracts/property.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/property.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.19;\r\n\r\ncontract PropertyManagement {\r\n\r\n    struct Property {\r\n        uint256 propertyId;\r\n        address owner;\r\n        string name;        // NEW\r\n        string location;    // NEW\r\n        string ipfsHash;\r\n        uint256 price;      // price in wei\r\n        bool isForSale;\r\n    }\r\n\r\n    uint256 public propertyCount;\r\n    mapping(uint256 => Property) public properties;\r\n\r\n    // Events\r\n    event PropertyRegistered(\r\n        uint256 propertyId,\r\n        address owner,\r\n        string name,\r\n        string location,\r\n        string ipfsHash,\r\n        uint256 price\r\n    );\r\n\r\n    event PropertyForSale(\r\n        uint256 propertyId,\r\n        uint256 price\r\n    );\r\n\r\n    event PropertyTransferred(\r\n        uint256 propertyId,\r\n        address from,\r\n        address to\r\n    );\r\n\r\n    event PropertySold(\r\n        uint256 propertyId,\r\n        address buyer,\r\n        uint256 price\r\n    );\r\n\r\n    modifier onlyOwner(uint256 _propertyId) {\r\n        require(_propertyId > 0 && _propertyId <= propertyCount, \"Invalid property\");\r\n        require(properties[_propertyId].owner == msg.sender, \"You are not the owner\");\r\n        _;\r\n    }\r\n\r\n    // 1️⃣ Register property (NO payment needed)\r\n    function registerProperty(\r\n        string memory _name,\r\n        string memory _location,\r\n        string memory _ipfsHash,\r\n        uint256 _price\r\n    ) external {\r\n        require(_price > 0, \"Price must be greater than zero\");\r\n\r\n        propertyCount++;\r\n\r\n        properties[propertyCount] = Property({\r\n            propertyId: propertyCount,\r\n            owner: msg.sender,\r\n            name: _name,\r\n            location: _location,\r\n            ipfsHash: _ipfsHash,\r\n            price: _price,\r\n            isForSale: false\r\n        });\r\n\r\n        emit PropertyRegistered(\r\n            propertyCount,\r\n            msg.sender,\r\n            _name,\r\n            _location,\r\n            _ipfsHash,\r\n            _price\r\n        );\r\n    }\r\n\r\n    // 2️⃣ Put property for sale\r\n    function putPropertyForSale(\r\n        uint256 _propertyId,\r\n        uint256 _price\r\n    ) external onlyOwner(_propertyId) {\r\n        require(_price > 0, \"Invalid price\");\r\n\r\n        properties[_propertyId].price = _price;\r\n        properties[_propertyId].isForSale = true;\r\n\r\n        emit PropertyForSale(_propertyId, _price);\r\n    }\r\n\r\n    // 3️⃣ Buy property\r\n    function buyProperty(uint256 _id) external payable {\r\n        require(_id > 0 && _id <= propertyCount, \"Property not found\");\r\n\r\n        Property storage prop = properties[_id];\r\n\r\n        require(prop.isForSale, \"Property not for sale\");\r\n        require(msg.sender != prop.owner, \"Owner cannot buy own property\");\r\n        require(msg.value == prop.price, \"Incorrect ETH amount\");\r\n\r\n        address seller = prop.owner;\r\n\r\n        (bool success, ) = payable(seller).call{value: msg.value}(\"\");\r\n        require(success, \"ETH transfer failed\");\r\n\r\n        prop.owner = msg.sender;\r\n        prop.isForSale = false;\r\n\r\n        emit PropertySold(_id, msg.sender, msg.value);\r\n        emit PropertyTransferred(_id, seller, msg.sender);\r\n    }\r\n\r\n    // 4️⃣ Get property details\r\n    function getProperty(uint256 _propertyId)\r\n        external\r\n        view\r\n        returns (\r\n            uint256,\r\n            address,\r\n            string memory,\r\n            string memory,\r\n            string memory,\r\n            uint256,\r\n            bool\r\n        )\r\n    {\r\n        require(_propertyId > 0 && _propertyId <= propertyCount, \"Property not found\");\r\n\r\n        Property memory p = properties[_propertyId];\r\n\r\n        return (\r\n            p.propertyId,\r\n            p.owner,\r\n            p.name,\r\n            p.location,\r\n            p.ipfsHash,\r\n            p.price,\r\n            p.isForSale\r\n        );\r\n    }\r\n}\r\n"
+      }
+    }
+  }
+}

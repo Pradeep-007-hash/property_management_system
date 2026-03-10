@@ -1,0 +1,220 @@
+@import "tailwindcss";
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Glass card theme variables (defaults for dark) */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-hover-bg: rgba(255, 255, 255, 0.06);
+  /* default glass card shadow (dark theme) */
+  --glass-shadow: 0 12px 30px rgba(141,40,230,0.06), 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Ensure html-level theme background and smooth transitions */
+html, body {
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+html.light {
+  background-color: #f5f5f5;
+  color: #213547;
+}
+
+html.dark {
+  background-color: #050a1a;
+  color: rgba(255,255,255,0.87);
+}
+
+/* Let page-level containers inherit the html background while still allowing local overrides */
+body {
+  background-color: transparent;
+}
+
+/* Light mode styles */
+.light {
+  color: #213547;
+  background-color: #ffffff;
+  /* Light theme overrides */
+  --glass-bg: rgba(0, 0, 0, 0.03);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-hover-bg: rgba(0, 0, 0, 0.06);
+  /* lighter shadow for light theme */
+  --glass-shadow: 0 8px 20px rgba(13,26,38,0.06), 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.light a {
+  color: #646cff;
+}
+
+.light a:hover {
+  color: #535bf2;
+}
+
+.light button {
+  background-color: #f9f9f9;
+  color: #213547;
+}
+
+.light body {
+  background-color: #f5f5f5;
+}
+
+/* Dark mode styles (default) */
+.dark {
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #050a1a;
+  /* Dark theme overrides (redundant with :root but explicit) */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-hover-bg: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 12px 30px rgba(141,40,230,0.06), 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.dark a {
+  color: #8d28e6;
+}
+
+.dark a:hover {
+  color: #a855f7;
+}
+
+.dark button {
+  background-color: #1a1a1a;
+  color: rgba(255, 255, 255, 0.87);
+}
+
+a {
+  font-weight: 500;
+  text-decoration: inherit;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: #646cff;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Custom Glassmorphism & Animations for Landing */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: #8d28e6;
+  background: var(--glass-hover-bg);
+  transform: translateY(-5px);
+}
+
+.gradient-bg {
+  background: radial-gradient(circle at top right, rgba(141, 40, 230, 0.15), transparent 40%),
+              radial-gradient(circle at bottom left, rgba(141, 40, 230, 0.1), transparent 40%),
+              #050a1a;
+}
+
+/* Light mode gradient */
+.light .gradient-bg {
+  background: radial-gradient(circle at top right, rgba(141, 40, 230, 0.1), transparent 40%),
+              radial-gradient(circle at bottom left, rgba(141, 40, 230, 0.05), transparent 40%),
+              #f5f5f5;
+}
+
+.text-gradient {
+  background: linear-gradient(to right, #ffffff, #8d28e6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.light .text-gradient {
+  background: linear-gradient(to right, #213547, #8d28e6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: #8d28e6;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Light mode text colors */
+.light .text-slate-400 {
+  color: #64748b;
+}
+
+.light .text-slate-500 {
+  color: #64748b;
+}
+
+.light .text-white {
+  color: #213547;
+}
+
+.light .bg-midnight {
+  background-color: #f5f5f5;
+}
+
+.light .border-border {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .bg-surface {
+  background-color: rgba(0, 0, 0, 0.05);
+}
