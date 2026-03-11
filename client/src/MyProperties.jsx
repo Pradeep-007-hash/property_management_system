@@ -10,11 +10,13 @@ export default function MyProperties() {
   const { theme } = useContext(ThemeContext)
   const { account, signer } = useContext(WalletContext)
   const [props, setProps] = useState([])
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
       if (!signer || !account) return;
       try {
+        setLoading(true);
         const contract = getPropertyContract(signer);
         // propertyCount comes back as a BigInt (ethers v6) or BigNumber,
       // convert to a plain number before iterating so the loop behaves
@@ -77,6 +79,8 @@ export default function MyProperties() {
         setProps(enriched);
       } catch (e) {
         console.error('failed to load props', e);
+      } finally {
+        setLoading(false);
       }
     }
     load();
@@ -165,7 +169,11 @@ export default function MyProperties() {
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
-            {props
+            {loading ? (
+              <div className="col-span-full text-center py-20 text-xl font-medium text-slate-500">
+                Loading properties...
+              </div>
+            ) : props
             .filter(p => p && p.propertyId != null)
             .map((p, idx) => (
               <PropertyCard
