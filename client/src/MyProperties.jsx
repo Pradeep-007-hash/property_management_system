@@ -16,17 +16,38 @@ export default function MyProperties() {
       if (!signer || !account) return;
       try {
         const contract = getPropertyContract(signer);
-        const count = await contract.propertyCount();
-        const results = [];
-        for (let i = 0; i < count; i++) {
-          const p = await contract.properties(i);
-          if (p.owner.toLowerCase() === account.toLowerCase()) {
-            results.push(p);
-          }
+        // propertyCount comes back as a BigInt (ethers v6) or BigNumber,
+      // convert to a plain number before iterating so the loop behaves
+      // predictably both locally and when built on Vercel.
+      let count = await contract.propertyCount();
+      if (typeof count !== 'number') {
+        // BigInt -> number or BigNumber -> use toNumber()
+        try { count = Number(count); } catch { count = count.toNumber ? count.toNumber() : 0; }
+      }
+
+      const results = [];
+      for (let i = 0; i < count; i++) {
+        const p = await contract.properties(i);
+        // some RPC endpoints return tuple-like objects where named fields
+        // aren't present; normalize immediately so later code can safely
+        // access p.propertyId, etc.
+        const normalized = {
+          propertyId: p.propertyId ?? p[0],
+          owner: p.owner ?? p[1],
+          name: p.name ?? p[2],
+          location: p.location ?? p[3],
+          ipfsHash: p.ipfsHash ?? p[4],
+          price: p.price ?? p[5],
+          isForSale: p.isForSale ?? p[6],
+        };
+        if (normalized.owner.toLowerCase() === account.toLowerCase()) {
+          results.push(normalized);
         }
-        // fetch metadata for each property
-        const gateway = 'https://gateway.pinata.cloud/ipfs';
-        const enriched = await Promise.all(results.map(async (p) => {
+      }
+
+      // fetch metadata for each property
+      const gateway = 'https://gateway.pinata.cloud/ipfs';
+      const enriched = await Promise.all(results.map(async (p) => {
           if (p.ipfsHash && typeof p.ipfsHash === 'string' && /^[A-Za-z0-9]+$/.test(p.ipfsHash)) {
             const url = `${gateway}/${p.ipfsHash}`;
             console.debug('fetching IPFS metadata', url);
@@ -144,11 +165,13 @@ export default function MyProperties() {
           </section>
 
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
-            {props.map((p, idx) => (
+            {props
+            .filter(p => p && p.propertyId != null)
+            .map((p, idx) => (
               <PropertyCard
                 key={idx}
                 theme={theme}
-                id={p.propertyId.toString()}
+                id={p.propertyId?.toString() ?? ''}
                 title={p.metadata?.name || p.name}
                 price={ethers.formatEther(p.price)}
                 location={p.metadata?.location || p.location}

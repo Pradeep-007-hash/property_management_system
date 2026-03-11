@@ -19,11 +19,24 @@ export default function ViewProperty() {
       if (!signer) return;
       try {
         const contract = getPropertyContract(signer);
-        const cnt = await contract.propertyCount();
+        let cnt = await contract.propertyCount();
+        if (typeof cnt !== 'number') {
+          try { cnt = Number(cnt); } catch { cnt = cnt.toNumber ? cnt.toNumber() : 0; }
+        }
         const items = [];
         for (let i = 0; i < cnt; i++) {
           const p = await contract.properties(i);
-          if (p.isForSale) items.push(p);
+          // normalize tuple-style result into named object
+          const normalized = {
+            propertyId: p.propertyId ?? p[0],
+            owner: p.owner ?? p[1],
+            name: p.name ?? p[2],
+            location: p.location ?? p[3],
+            ipfsHash: p.ipfsHash ?? p[4],
+            price: p.price ?? p[5],
+            isForSale: p.isForSale ?? p[6],
+          };
+          if (normalized.isForSale) items.push(normalized);
         }
         // attach metadata from IPFS where available
         const gateway = 'https://gateway.pinata.cloud/ipfs';
@@ -206,11 +219,13 @@ export default function ViewProperty() {
 
           {/* Property Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {listings.map((p, idx) => (
+            {listings
+              .filter(p => p && p.propertyId != null)
+              .map((p, idx) => (
               <PropertyCard
                 key={idx}
                 theme={theme}
-                id={p.propertyId.toString()}
+                id={p.propertyId?.toString() ?? ''}
                 title={p.metadata?.name || p.name}
                 price={ethers.formatEther(p.price)}
                 location={p.metadata?.location || p.location}
